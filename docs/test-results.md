@@ -8,8 +8,8 @@ Comprehensive test run executed on Windows 11 with JDK 21, Kotlin 2.1.21, JUnit 
 
 | Metric | Result |
 | :--- | :--- |
-| **Total Test Suites** | 6 |
-| **Total Test Cases** | **27** |
+| **Total Test Suites** | 7 |
+| **Total Test Cases** | **28** |
 | **Failures** | **0** |
 | **Errors** | **0** |
 | **Skipped** | **0** |
@@ -34,6 +34,7 @@ Comprehensive test run executed on Windows 11 with JDK 21, Kotlin 2.1.21, JUnit 
 | :--- | :--- | :--- | :--- |
 | `AnomalyDetectorTest.java` | 4 | PASSED | - ThresholdDetector upper bound & critical alarms<br>- ZScoreDetector rolling 3σ outlier identification<br>- RootCauseAnalyzer topological candidate localization<br>- PerformanceAnalyzer precision, recall, and F1 scoring |
 | `RepositoryTest.java` | 4 | PASSED | - SQLite schema initialization<br>- SystemModel & dependency topology persistence<br>- SimulationRun lifecycle update queries<br>- High-throughput sensor reading batch insertion<br>- SimulationEvent and AnomalyEvent persistence |
+| `EndToEndIntegrationTest.java` | 1 | PASSED | - Full end-to-end integration: template creation, Kotlin validation, simulation ticks, SQLite batch persistence, failure cascade injection, Z-score/threshold anomaly detection, topological root-cause localization, recovery, CSV telemetry export, and executive markdown summary |
 | `ScenarioValidatorTest.kt` | 4 | PASSED | - Valid system structure verification<br>- Invalid sensor range detection (min >= max)<br>- Cyclic dependency warning detection<br>- Failure injection validation on pre-failed components |
 
 ---
