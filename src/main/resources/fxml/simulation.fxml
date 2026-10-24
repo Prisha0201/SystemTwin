@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.systemtwin.ui.SimulationController"
+      spacing="16" style="-fx-background-color: #0f172a;">
+    <padding>
+        <Insets top="16" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- Simulation Controls Toolbar -->
+    <HBox spacing="16" alignment="CENTER_LEFT" styleClass="metric-card">
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <Button fx:id="startBtn" text="▶ Start" onAction="#handleStart" styleClass="btn-success"/>
+            <Button fx:id="pauseBtn" text="⏸ Pause" onAction="#handlePause" styleClass="btn-secondary"/>
+            <Button fx:id="resumeBtn" text="⏯ Resume" onAction="#handleResume" styleClass="btn-primary"/>
+            <Button fx:id="stepBtn" text="⏭ Step" onAction="#handleStep" styleClass="btn-secondary"/>
+            <Button fx:id="stopBtn" text="⏹ Stop" onAction="#handleStop" styleClass="btn-danger"/>
+        </HBox>
+
+        <Separator orientation="VERTICAL"/>
+
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <Label text="Speed:" style="-fx-text-fill: #94a3b8;"/>
+            <Slider fx:id="speedSlider" min="0.5" max="5.0" value="1.0" prefWidth="120"/>
+            <Label fx:id="speedLabel" text="1.0x" style="-fx-text-fill: #38bdf8; -fx-font-weight: bold;"/>
+        </HBox>
+
+        <Separator orientation="VERTICAL"/>
+
+        <HBox spacing="8" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+            <Label text="Target Component:" style="-fx-text-fill: #94a3b8;"/>
+            <ComboBox fx:id="componentFaultCombo" prefWidth="130"/>
+            <Button fx:id="injectFailureBtn" text="⚡ Inject Failure" onAction="#handleInjectFailure" styleClass="btn-danger"/>
+            <Button fx:id="injectDegradeBtn" text="⚠️ High Load" onAction="#handleInjectDegradation" styleClass="btn-secondary"/>
+            <Button fx:id="recoverBtn" text="🔄 Recover" onAction="#handleRecover" styleClass="btn-success"/>
+        </HBox>
+    </HBox>
+
+    <!-- Real-time Event & Cascade Log -->
+    <VBox spacing="8" styleClass="metric-card" VBox.vgrow="ALWAYS">
+        <Label text="SIMULATION EVENT &amp; CASCADE PROPAGATION LOG" styleClass="metric-card-title"/>
+        <ListView fx:id="eventLogView" VBox.vgrow="ALWAYS"/>
+    </VBox>
+</VBox>

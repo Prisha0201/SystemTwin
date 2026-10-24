@@ -1,0 +1,47 @@
+{
+  "systemId": "sys-datacenter-01",
+  "name": "Cloud Microservices Cluster",
+  "description": "Multi-tier infrastructure with load balancer, web frontend, API gateway, cache, and database",
+  "components": [
+    {
+      "id": "edge-lb",
+      "name": "Edge Load Balancer",
+      "type": "GATEWAY",
+      "sensors": [
+        { "id": "s-lb-req", "metricName": "REQUEST_RATE", "unit": "req/s", "minNormal": 500.0, "maxNormal": 5000.0 },
+        { "id": "s-lb-cpu", "metricName": "CPU", "unit": "%", "minNormal": 10.0, "maxNormal": 60.0 }
+      ]
+    },
+    {
+      "id": "web-srv-1",
+      "name": "Web Frontend Node 1",
+      "type": "SERVER",
+      "sensors": [
+        { "id": "s-w1-cpu", "metricName": "CPU", "unit": "%", "minNormal": 15.0, "maxNormal": 75.0 },
+        { "id": "s-w1-temp", "metricName": "TEMPERATURE", "unit": "°C", "minNormal": 35.0, "maxNormal": 68.0 }
+      ]
+    },
+    {
+      "id": "api-gateway",
+      "name": "Core API Service",
+      "type": "SERVER",
+      "sensors": [
+        { "id": "s-api-latency", "metricName": "LATENCY", "unit": "ms", "minNormal": 5.0, "maxNormal": 45.0 }
+      ]
+    },
+    {
+      "id": "pg-db-cluster",
+      "name": "PostgreSQL Primary",
+      "type": "DATABASE",
+      "sensors": [
+        { "id": "s-db-iops", "metricName": "IOPS", "unit": "iops", "minNormal": 200.0, "maxNormal": 4000.0 },
+        { "id": "s-db-lat", "metricName": "QUERY_LATENCY", "unit": "ms", "minNormal": 2.0, "maxNormal": 35.0 }
+      ]
+    }
+  ],
+  "dependencies": [
+    { "source": "edge-lb", "target": "web-srv-1" },
+    { "source": "web-srv-1", "target": "api-gateway" },
+    { "source": "api-gateway", "target": "pg-db-cluster" }
+  ]
+}
