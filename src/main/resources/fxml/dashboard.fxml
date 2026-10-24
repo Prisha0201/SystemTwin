@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.systemtwin.ui.DashboardController"
+      spacing="16" style="-fx-background-color: #0f172a;">
+    <padding>
+        <Insets top="16" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- Top KPI Cards -->
+    <GridPane hgap="16" vgap="16">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="25"/>
+            <ColumnConstraints percentWidth="25"/>
+            <ColumnConstraints percentWidth="25"/>
+            <ColumnConstraints percentWidth="25"/>
+        </columnConstraints>
+
+        <VBox styleClass="metric-card" GridPane.columnIndex="0">
+            <Label text="SYSTEM STATUS" styleClass="metric-card-title"/>
+            <Label fx:id="statusLabel" text="IDLE" styleClass="metric-card-value"/>
+        </VBox>
+
+        <VBox styleClass="metric-card" GridPane.columnIndex="1">
+            <Label text="COMPONENTS" styleClass="metric-card-title"/>
+            <Label fx:id="componentsCountLabel" text="0" styleClass="metric-card-value"/>
+        </VBox>
+
+        <VBox styleClass="metric-card" GridPane.columnIndex="2">
+            <Label text="ACTIVE ANOMALIES" styleClass="metric-card-title"/>
+            <Label fx:id="anomaliesCountLabel" text="0" styleClass="metric-card-value" style="-fx-text-fill: #f59e0b;"/>
+        </VBox>
+
+        <VBox styleClass="metric-card" GridPane.columnIndex="3">
+            <Label text="SIMULATION TICKS" styleClass="metric-card-title"/>
+            <Label fx:id="simulationTimeLabel" text="00:00" styleClass="metric-card-value"/>
+        </VBox>
+    </GridPane>
+
+    <!-- Split between Live Telemetry and Anomaly Feed -->
+    <SplitPane dividerPositions="0.65" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;">
+        <VBox spacing="8" styleClass="metric-card">
+            <Label text="LIVE SENSOR TELEMETRY STREAM" styleClass="metric-card-title"/>
+            <TableView fx:id="readingsTable" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="compCol" text="Component" prefWidth="120"/>
+                    <TableColumn fx:id="metricCol" text="Metric" prefWidth="120"/>
+                    <TableColumn fx:id="valueCol" text="Current Value" prefWidth="100"/>
+                    <TableColumn fx:id="unitCol" text="Unit" prefWidth="60"/>
+                    <TableColumn fx:id="statusCol" text="Status" prefWidth="90"/>
+                </columns>
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
+            </TableView>
+        </VBox>
+
+        <VBox spacing="8" styleClass="metric-card">
+            <Label text="ACTIVE ANOMALY FEED" styleClass="metric-card-title" style="-fx-text-fill: #ef4444;"/>
+            <ListView fx:id="anomalyListView" VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </SplitPane>
+</VBox>

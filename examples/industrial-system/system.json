@@ -1,0 +1,47 @@
+{
+  "systemId": "sys-industrial-01",
+  "name": "Automated Assembly Line",
+  "description": "Industrial digital twin with Master PLC, robotic arm, conveyor, and hydraulic pump",
+  "components": [
+    {
+      "id": "plc-main",
+      "name": "Master PLC Controller",
+      "type": "PLC",
+      "sensors": [
+        { "id": "s-plc-cycle", "metricName": "CYCLE_TIME", "unit": "ms", "minNormal": 5.0, "maxNormal": 15.0 },
+        { "id": "s-plc-volt", "metricName": "VOLTAGE", "unit": "V", "minNormal": 23.8, "maxNormal": 24.2 }
+      ]
+    },
+    {
+      "id": "pump-01",
+      "name": "Hydraulic Primary Pump",
+      "type": "PUMP",
+      "sensors": [
+        { "id": "s-pump-press", "metricName": "PRESSURE", "unit": "bar", "minNormal": 4.0, "maxNormal": 8.0 },
+        { "id": "s-pump-flow", "metricName": "FLOW_RATE", "unit": "L/min", "minNormal": 40.0, "maxNormal": 100.0 }
+      ]
+    },
+    {
+      "id": "robot-arm",
+      "name": "6-Axis Assembly Robot",
+      "type": "ROBOT",
+      "sensors": [
+        { "id": "s-rob-temp", "metricName": "TEMPERATURE", "unit": "°C", "minNormal": 30.0, "maxNormal": 65.0 },
+        { "id": "s-rob-torque", "metricName": "TORQUE", "unit": "Nm", "minNormal": 20.0, "maxNormal": 85.0 }
+      ]
+    },
+    {
+      "id": "conveyor-01",
+      "name": "Intake Conveyor Belt",
+      "type": "CONVEYOR",
+      "sensors": [
+        { "id": "s-conv-speed", "metricName": "SPEED", "unit": "m/s", "minNormal": 1.0, "maxNormal": 2.5 }
+      ]
+    }
+  ],
+  "dependencies": [
+    { "source": "robot-arm", "target": "pump-01" },
+    { "source": "robot-arm", "target": "plc-main" },
+    { "source": "conveyor-01", "target": "plc-main" }
+  ]
+}

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.systemtwin.ui.HistoryController"
+      spacing="16" style="-fx-background-color: #0f172a;">
+    <padding>
+        <Insets top="16" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- Top Action Toolbar -->
+    <HBox spacing="16" alignment="CENTER_LEFT" styleClass="metric-card">
+        <Button text="📥 Export Telemetry CSV" onAction="#handleExportTelemetryCsv" styleClass="btn-primary"/>
+        <Separator orientation="VERTICAL"/>
+        <Label text="Baseline Run:" style="-fx-text-fill: #94a3b8;"/>
+        <ComboBox fx:id="baselineRunCombo" prefWidth="180"/>
+        <Label text="Failure Run:" style="-fx-text-fill: #94a3b8;"/>
+        <ComboBox fx:id="failureRunCombo" prefWidth="180"/>
+        <Button text="Compare Runs" onAction="#handleCompareRuns" styleClass="btn-secondary"/>
+    </HBox>
+
+    <!-- Table of Past Simulation Runs -->
+    <VBox spacing="8" styleClass="metric-card" prefHeight="220">
+        <Label text="HISTORICAL SIMULATION RUNS" styleClass="metric-card-title"/>
+        <TableView fx:id="runsTable" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="runIdCol" text="Run ID" prefWidth="150"/>
+                <TableColumn fx:id="runNameCol" text="Run Name" prefWidth="180"/>
+                <TableColumn fx:id="runStatusCol" text="Status" prefWidth="90"/>
+                <TableColumn fx:id="runTicksCol" text="Ticks" prefWidth="70"/>
+                <TableColumn fx:id="runAnomaliesCol" text="Anomalies" prefWidth="80"/>
+            </columns>
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+            </columnResizePolicy>
+        </TableView>
+    </VBox>
+
+    <!-- Comparison Report Area -->
+    <VBox spacing="8" styleClass="metric-card" VBox.vgrow="ALWAYS">
+        <Label text="RUN COMPARISON &amp; DELTA ANALYSIS" styleClass="metric-card-title"/>
+        <TextArea fx:id="comparisonReportArea" editable="false" VBox.vgrow="ALWAYS"
+                  promptText="Select baseline and failure runs above, then click 'Compare Runs' to view statistical variance and metric deltas."/>
+    </VBox>
+</VBox>
