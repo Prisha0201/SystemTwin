@@ -3,6 +3,8 @@
 .root {
     -fx-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     -fx-background-color: #0f172a;
+    -fx-control-inner-background: #0b1120;
+    -fx-control-inner-background-alt: #1e293b;
     -fx-text-fill: #e2e8f0;
 }
 
@@ -195,13 +197,69 @@
     -fx-border-width: 0 0 1 0;
 }
 
-.text-area, .text-field {
+.text-area {
+    -fx-background-color: #0b1120;
+    -fx-control-inner-background: #0b1120;
+    -fx-border-color: #334155;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-border-width: 1px;
+    -fx-font-family: "Consolas", "Cascadia Code", "Courier New", monospace;
+    -fx-font-size: 13px;
+    -fx-text-fill: #38bdf8;
+    -fx-prompt-text-fill: #64748b;
+    -fx-highlight-fill: #0284c7;
+    -fx-highlight-text-fill: #ffffff;
+}
+
+.text-area:focused {
+    -fx-border-color: #38bdf8;
+}
+
+.text-area .content {
+    -fx-background-color: #0b1120;
+    -fx-background-radius: 6px;
+    -fx-padding: 8 12 8 12;
+}
+
+.text-area .text {
+    -fx-fill: #38bdf8;
+}
+
+.diagnostic-text-area {
+    -fx-background-color: #0b1120;
+    -fx-control-inner-background: #0b1120;
+    -fx-border-color: #334155;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-border-width: 1px;
+    -fx-font-family: "Consolas", "Cascadia Code", "Courier New", monospace;
+    -fx-font-size: 13px;
+    -fx-text-fill: #38bdf8;
+}
+
+.diagnostic-text-area .content {
+    -fx-background-color: #0b1120;
+    -fx-background-radius: 6px;
+    -fx-padding: 8 12 8 12;
+}
+
+.diagnostic-text-area .text {
+    -fx-fill: #38bdf8;
+}
+
+.text-field {
     -fx-background-color: #1e293b;
     -fx-text-fill: #f8fafc;
+    -fx-prompt-text-fill: #64748b;
     -fx-border-color: #475569;
     -fx-border-radius: 6px;
     -fx-background-radius: 6px;
     -fx-padding: 6 10 6 10;
+}
+
+.text-field:focused {
+    -fx-border-color: #38bdf8;
 }
 
 .combo-box {
@@ -211,4 +269,45 @@
 
 .combo-box .cell {
     -fx-text-fill: #f8fafc;
+}
+
+.button {
+    -fx-wrap-text: false;
+}
+
+/* Chart Dark Theme */
+.chart {
+    -fx-padding: 8px;
+}
+.chart-plot-background {
+    -fx-background-color: #0f172a;
+}
+.chart-vertical-grid-lines {
+    -fx-stroke: #1e293b;
+}
+.chart-horizontal-grid-lines {
+    -fx-stroke: #1e293b;
+}
+.axis {
+    -fx-tick-label-fill: #94a3b8;
+    -fx-tick-label-font-size: 10px;
+}
+.axis:bottom {
+    -fx-border-color: #334155 transparent transparent transparent;
+}
+.axis:left {
+    -fx-border-color: transparent #334155 transparent transparent;
+}
+.axis-label {
+    -fx-text-fill: #94a3b8;
+    -fx-font-size: 11px;
+}
+.chart-legend {
+    -fx-background-color: transparent;
+}
+.chart-legend-item-symbol {
+    -fx-background-radius: 4px;
+}
+.chart-legend-item {
+    -fx-text-fill: #e2e8f0;
 }

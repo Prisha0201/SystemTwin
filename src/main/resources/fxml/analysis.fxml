@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.systemtwin.ui.AnalysisController"
+            fitToWidth="true"
+            style="-fx-background-color: #0f172a; -fx-border-color: transparent;">
+    <content>
+        <VBox spacing="16" style="-fx-background-color: #0f172a;">
+            <padding>
+                <Insets top="16" right="20" bottom="20" left="20"/>
+            </padding>
+
+            <!-- Root Cause Analysis Card -->
+            <VBox spacing="12" styleClass="metric-card">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <Label text="TOPOLOGICAL ROOT CAUSE LOCALIZATION (RCA)" styleClass="metric-card-title"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="⚡ Simulate Fault &amp; Localize" onAction="#handleSimulateFaultAndDiagnose" styleClass="btn-danger" minWidth="-Infinity"/>
+                    <Button text="🔍 Diagnose Active Anomalies" onAction="#handleRunRootCauseAnalysis" styleClass="btn-primary" minWidth="-Infinity"/>
+                </HBox>
+
+                <GridPane hgap="16" vgap="12">
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="22"/>
+                        <ColumnConstraints percentWidth="78"/>
+                    </columnConstraints>
+
+                    <Label text="Primary Culprit Component:" style="-fx-text-fill: #94a3b8; -fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                    <Label fx:id="rootCauseCompLabel" text="Not diagnosed yet" style="-fx-text-fill: #38bdf8; -fx-font-size: 15px; -fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                    <Label text="Diagnostic Confidence:" style="-fx-text-fill: #94a3b8; -fx-font-weight: bold;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                    <Label fx:id="confidenceLabel" text="N/A" style="-fx-text-fill: #38bdf8; -fx-font-weight: bold;" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                    <Label text="Propagation Chain:" style="-fx-text-fill: #94a3b8; -fx-font-weight: bold;" GridPane.rowIndex="2" GridPane.columnIndex="0" GridPane.valignment="TOP"/>
+                    <TextArea fx:id="propagationPathArea" prefHeight="170" minHeight="130" editable="false" wrapText="true" styleClass="diagnostic-text-area" style="-fx-control-inner-background: #0b1120; -fx-background-color: #0b1120; -fx-text-fill: #38bdf8; -fx-font-family: 'Consolas', monospace; -fx-font-size: 13px; -fx-border-color: #334155; -fx-border-radius: 6px;" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                    <Label text="Diagnosis Explanation:" style="-fx-text-fill: #94a3b8; -fx-font-weight: bold;" GridPane.rowIndex="3" GridPane.columnIndex="0" GridPane.valignment="TOP"/>
+                    <TextArea fx:id="explanationArea" prefHeight="320" minHeight="220" editable="false" wrapText="true" styleClass="diagnostic-text-area" style="-fx-control-inner-background: #0b1120; -fx-background-color: #0b1120; -fx-text-fill: #38bdf8; -fx-font-family: 'Consolas', monospace; -fx-font-size: 13px; -fx-border-color: #334155; -fx-border-radius: 6px;" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                </GridPane>
+            </VBox>
+        </VBox>
+    </content>
+</ScrollPane>

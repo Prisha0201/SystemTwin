@@ -4,45 +4,61 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.systemtwin.ui.HistoryController"
-      spacing="16" style="-fx-background-color: #0f172a;">
-    <padding>
-        <Insets top="16" right="20" bottom="20" left="20"/>
-    </padding>
+<ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.systemtwin.ui.HistoryController"
+            fitToWidth="true" fitToHeight="true"
+            style="-fx-background-color: #0f172a; -fx-border-color: transparent;">
+    <content>
+        <VBox spacing="16" style="-fx-background-color: #0f172a;">
+            <padding>
+                <Insets top="16" right="20" bottom="20" left="20"/>
+            </padding>
 
-    <!-- Top Action Toolbar -->
-    <HBox spacing="16" alignment="CENTER_LEFT" styleClass="metric-card">
-        <Button text="📥 Export Telemetry CSV" onAction="#handleExportTelemetryCsv" styleClass="btn-primary"/>
-        <Separator orientation="VERTICAL"/>
-        <Label text="Baseline Run:" style="-fx-text-fill: #94a3b8;"/>
-        <ComboBox fx:id="baselineRunCombo" prefWidth="180"/>
-        <Label text="Failure Run:" style="-fx-text-fill: #94a3b8;"/>
-        <ComboBox fx:id="failureRunCombo" prefWidth="180"/>
-        <Button text="Compare Runs" onAction="#handleCompareRuns" styleClass="btn-secondary"/>
-    </HBox>
+            <!-- Action Toolbar -->
+            <VBox spacing="10" styleClass="metric-card">
+                <FlowPane hgap="12" vgap="10" alignment="CENTER_LEFT">
+                    <Label text="Compare Runs:" style="-fx-text-fill: #f8fafc; -fx-font-weight: bold;"/>
+                    <Label text="Baseline:" style="-fx-text-fill: #94a3b8;"/>
+                    <ComboBox fx:id="baselineRunCombo" prefWidth="260"/>
+                    <Label text="Failure:" style="-fx-text-fill: #94a3b8;"/>
+                    <ComboBox fx:id="failureRunCombo" prefWidth="260"/>
+                    <Button text="Compare Runs" onAction="#handleCompareRuns" styleClass="btn-secondary" minWidth="-Infinity"/>
+                </FlowPane>
+                <Separator/>
+                <FlowPane hgap="12" vgap="10" alignment="CENTER_LEFT">
+                    <Label text="Selected Run Actions:" style="-fx-text-fill: #f8fafc; -fx-font-weight: bold;"/>
+                    <Button text="🔄 Refresh Runs" onAction="#refreshRuns" styleClass="btn-secondary" minWidth="-Infinity"/>
+                    <Button text="📥 Export Telemetry CSV" onAction="#handleExportTelemetryCsv" styleClass="btn-primary" minWidth="-Infinity"/>
+                    <Button text="⚠ Export Anomalies CSV" onAction="#handleExportAnomaliesCsv" styleClass="btn-secondary" minWidth="-Infinity"/>
+                    <Button text="📄 Executive Markdown Report" onAction="#handleGenerateExecutiveReport" styleClass="btn-secondary" minWidth="-Infinity"/>
+                    <Button text="▶ Replay Run" onAction="#handleReplayRun" styleClass="btn-success" minWidth="-Infinity"/>
+                    <Button text="📂 Open Exports Folder" onAction="#handleOpenExportsFolder" styleClass="btn-secondary" minWidth="-Infinity"/>
+                </FlowPane>
+                <Label fx:id="exportStatusLabel" text="" wrapText="true" style="-fx-text-fill: #38bdf8; -fx-font-size: 12px;"/>
+            </VBox>
 
-    <!-- Table of Past Simulation Runs -->
-    <VBox spacing="8" styleClass="metric-card" prefHeight="220">
-        <Label text="HISTORICAL SIMULATION RUNS" styleClass="metric-card-title"/>
-        <TableView fx:id="runsTable" VBox.vgrow="ALWAYS">
-            <columns>
-                <TableColumn fx:id="runIdCol" text="Run ID" prefWidth="150"/>
-                <TableColumn fx:id="runNameCol" text="Run Name" prefWidth="180"/>
-                <TableColumn fx:id="runStatusCol" text="Status" prefWidth="90"/>
-                <TableColumn fx:id="runTicksCol" text="Ticks" prefWidth="70"/>
-                <TableColumn fx:id="runAnomaliesCol" text="Anomalies" prefWidth="80"/>
-            </columns>
-            <columnResizePolicy>
-                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
-            </columnResizePolicy>
-        </TableView>
-    </VBox>
+            <!-- Table of Past Simulation Runs -->
+            <VBox spacing="8" styleClass="metric-card" prefHeight="220" minHeight="180">
+                <Label text="HISTORICAL SIMULATION RUNS" styleClass="metric-card-title"/>
+                <TableView fx:id="runsTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="runIdCol" text="Run ID" prefWidth="150"/>
+                        <TableColumn fx:id="runNameCol" text="Run Name" prefWidth="180"/>
+                        <TableColumn fx:id="runStatusCol" text="Status" prefWidth="90"/>
+                        <TableColumn fx:id="runTicksCol" text="Ticks" prefWidth="70"/>
+                        <TableColumn fx:id="runAnomaliesCol" text="Anomalies" prefWidth="80"/>
+                    </columns>
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                    </columnResizePolicy>
+                </TableView>
+            </VBox>
 
-    <!-- Comparison Report Area -->
-    <VBox spacing="8" styleClass="metric-card" VBox.vgrow="ALWAYS">
-        <Label text="RUN COMPARISON &amp; DELTA ANALYSIS" styleClass="metric-card-title"/>
-        <TextArea fx:id="comparisonReportArea" editable="false" VBox.vgrow="ALWAYS"
-                  promptText="Select baseline and failure runs above, then click 'Compare Runs' to view statistical variance and metric deltas."/>
-    </VBox>
-</VBox>
+            <!-- Output Area -->
+            <VBox spacing="8" styleClass="metric-card" VBox.vgrow="ALWAYS">
+                <Label text="RESULTS: COMPARISON, EXPORTS &amp; REPORTS" styleClass="metric-card-title"/>
+                <TextArea fx:id="comparisonReportArea" editable="false" wrapText="true" minHeight="220" VBox.vgrow="ALWAYS" styleClass="diagnostic-text-area" style="-fx-control-inner-background: #0b1120; -fx-background-color: #0b1120; -fx-text-fill: #38bdf8; -fx-font-family: 'Consolas', monospace; -fx-font-size: 13px; -fx-border-color: #334155; -fx-border-radius: 6px;"/>
+            </VBox>
+        </VBox>
+    </content>
+</ScrollPane>

@@ -3,6 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.chart.*?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.systemtwin.ui.DashboardController"
@@ -41,8 +42,21 @@
         </VBox>
     </GridPane>
 
-    <!-- Split between Live Telemetry and Anomaly Feed -->
-    <SplitPane dividerPositions="0.65" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;">
+    <!-- Live Telemetry Waveform Chart -->
+    <VBox spacing="8" styleClass="metric-card" prefHeight="220">
+        <Label text="REAL-TIME TELEMETRY STREAM WAVEFORM" styleClass="metric-card-title"/>
+        <LineChart fx:id="telemetryChart" legendSide="TOP" createSymbols="false" animated="false" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;">
+            <xAxis>
+                <NumberAxis fx:id="chartXAxis" label="Tick" autoRanging="true" forceZeroInRange="false"/>
+            </xAxis>
+            <yAxis>
+                <NumberAxis fx:id="chartYAxis" label="Value" autoRanging="true"/>
+            </yAxis>
+        </LineChart>
+    </VBox>
+
+    <!-- Split between Live Telemetry Table and Anomaly Feed -->
+    <SplitPane dividerPositions="0.62" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;">
         <VBox spacing="8" styleClass="metric-card">
             <Label text="LIVE SENSOR TELEMETRY STREAM" styleClass="metric-card-title"/>
             <TableView fx:id="readingsTable" VBox.vgrow="ALWAYS">

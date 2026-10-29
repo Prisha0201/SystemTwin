@@ -12,33 +12,29 @@
     </padding>
 
     <!-- Simulation Controls Toolbar -->
-    <HBox spacing="16" alignment="CENTER_LEFT" styleClass="metric-card">
-        <HBox spacing="8" alignment="CENTER_LEFT">
-            <Button fx:id="startBtn" text="▶ Start" onAction="#handleStart" styleClass="btn-success"/>
-            <Button fx:id="pauseBtn" text="⏸ Pause" onAction="#handlePause" styleClass="btn-secondary"/>
-            <Button fx:id="resumeBtn" text="⏯ Resume" onAction="#handleResume" styleClass="btn-primary"/>
-            <Button fx:id="stepBtn" text="⏭ Step" onAction="#handleStep" styleClass="btn-secondary"/>
-            <Button fx:id="stopBtn" text="⏹ Stop" onAction="#handleStop" styleClass="btn-danger"/>
-        </HBox>
-
-        <Separator orientation="VERTICAL"/>
-
-        <HBox spacing="8" alignment="CENTER_LEFT">
+    <VBox spacing="10" styleClass="metric-card">
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <Label text="Simulation Runner:" style="-fx-text-fill: #f8fafc; -fx-font-weight: bold;"/>
+            <Button fx:id="startBtn" text="▶ Start" onAction="#handleStart" styleClass="btn-success" minWidth="-Infinity"/>
+            <Button fx:id="pauseBtn" text="⏸ Pause" onAction="#handlePause" styleClass="btn-secondary" minWidth="-Infinity"/>
+            <Button fx:id="resumeBtn" text="⏯ Resume" onAction="#handleResume" styleClass="btn-primary" minWidth="-Infinity"/>
+            <Button fx:id="stepBtn" text="⏭ Step" onAction="#handleStep" styleClass="btn-secondary" minWidth="-Infinity"/>
+            <Button fx:id="stopBtn" text="⏹ Stop" onAction="#handleStop" styleClass="btn-danger" minWidth="-Infinity"/>
+            <Separator orientation="VERTICAL"/>
             <Label text="Speed:" style="-fx-text-fill: #94a3b8;"/>
             <Slider fx:id="speedSlider" min="0.5" max="5.0" value="1.0" prefWidth="120"/>
             <Label fx:id="speedLabel" text="1.0x" style="-fx-text-fill: #38bdf8; -fx-font-weight: bold;"/>
         </HBox>
-
-        <Separator orientation="VERTICAL"/>
-
-        <HBox spacing="8" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
-            <Label text="Target Component:" style="-fx-text-fill: #94a3b8;"/>
-            <ComboBox fx:id="componentFaultCombo" prefWidth="130"/>
-            <Button fx:id="injectFailureBtn" text="⚡ Inject Failure" onAction="#handleInjectFailure" styleClass="btn-danger"/>
-            <Button fx:id="injectDegradeBtn" text="⚠️ High Load" onAction="#handleInjectDegradation" styleClass="btn-secondary"/>
-            <Button fx:id="recoverBtn" text="🔄 Recover" onAction="#handleRecover" styleClass="btn-success"/>
+        <Separator/>
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <Label text="Fault Injection:" style="-fx-text-fill: #f8fafc; -fx-font-weight: bold;"/>
+            <Label text="Target:" style="-fx-text-fill: #94a3b8;"/>
+            <ComboBox fx:id="componentFaultCombo" prefWidth="180"/>
+            <Button fx:id="injectFailureBtn" text="⚡ Inject Failure" onAction="#handleInjectFailure" styleClass="btn-danger" minWidth="-Infinity"/>
+            <Button fx:id="injectDegradeBtn" text="⚠ High Load" onAction="#handleInjectDegradation" styleClass="btn-secondary" minWidth="-Infinity"/>
+            <Button fx:id="recoverBtn" text="🔄 Recover" onAction="#handleRecover" styleClass="btn-success" minWidth="-Infinity"/>
         </HBox>
-    </HBox>
+    </VBox>
 
     <!-- Real-time Event & Cascade Log -->
     <VBox spacing="8" styleClass="metric-card" VBox.vgrow="ALWAYS">

@@ -13,22 +13,22 @@
 
     <!-- Component & Dependency Creation Controls -->
     <HBox spacing="16">
-        <HBox spacing="8" alignment="CENTER_LEFT" styleClass="metric-card" HBox.hgrow="ALWAYS">
+        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="metric-card" HBox.hgrow="ALWAYS">
             <Label text="Component ID:" style="-fx-text-fill: #94a3b8;"/>
-            <TextField fx:id="compIdField" promptText="e.g. srv-01" prefWidth="100"/>
+            <TextField fx:id="compIdField" promptText="e.g. srv-01" prefWidth="110"/>
             <Label text="Name:" style="-fx-text-fill: #94a3b8;"/>
-            <TextField fx:id="compNameField" promptText="e.g. Edge Server" prefWidth="130"/>
+            <TextField fx:id="compNameField" promptText="e.g. Edge Server" prefWidth="140"/>
             <Label text="Type:" style="-fx-text-fill: #94a3b8;"/>
-            <ComboBox fx:id="compTypeCombo" prefWidth="110"/>
-            <Button text="+ Add Node" onAction="#handleAddComponent" styleClass="btn-primary"/>
+            <ComboBox fx:id="compTypeCombo" prefWidth="130"/>
+            <Button text="+ Add Node" onAction="#handleAddComponent" styleClass="btn-primary" minWidth="-Infinity"/>
         </HBox>
 
-        <HBox spacing="8" alignment="CENTER_LEFT" styleClass="metric-card">
+        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="metric-card">
             <Label text="Dependent:" style="-fx-text-fill: #94a3b8;"/>
-            <ComboBox fx:id="depSourceCombo" prefWidth="110"/>
+            <ComboBox fx:id="depSourceCombo" prefWidth="120"/>
             <Label text="Depends on:" style="-fx-text-fill: #94a3b8;"/>
-            <ComboBox fx:id="depTargetCombo" prefWidth="110"/>
-            <Button text="Link Edge" onAction="#handleAddDependency" styleClass="btn-secondary"/>
+            <ComboBox fx:id="depTargetCombo" prefWidth="120"/>
+            <Button text="Link Edge" onAction="#handleAddDependency" styleClass="btn-secondary" minWidth="-Infinity"/>
         </HBox>
     </HBox>
 
