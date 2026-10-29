@@ -75,67 +75,45 @@ public class SystemTwinApplication extends Application {
     private HistoryService historyService;
     private TemplateService templateService;
     private ReportService reportService;
+    private ReplayService replayService;
 
     private DashboardController dashboardController;
     private BuilderController builderController;
     private SimulationController simulationController;
     private HistoryController historyController;
+    private AnalysisController analysisController;
 
     private Timeline uiRefreshTimeline;
+    private org.springframework.context.annotation.AnnotationConfigApplicationContext springContext;
 
     @Override
     public void init() {
-        // Initialize SQLite local database
-        String dbDir = System.getProperty("user.home") + File.separator + ".systemtwin";
-        new File(dbDir).mkdirs();
-        String dbUrl = "jdbc:sqlite:" + dbDir + File.separator + "systemtwin.db";
+        // Bootstraps Spring ApplicationContext and wires all beans
+        springContext = new org.springframework.context.annotation.AnnotationConfigApplicationContext(SpringConfig.class);
 
-        try (Connection conn = DriverManager.getConnection(dbUrl);
-             Statement stmt = conn.createStatement()) {
-            InputStream is = getClass().getResourceAsStream("/database/schema.sql");
-            if (is != null) {
-                String sql = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-                for (String s : sql.split(";")) {
-                    if (!s.trim().isEmpty()) stmt.execute(s.trim());
-                }
-            }
-        } catch (Exception ex) {
-            System.err.println("Database init warning: " + ex.getMessage());
-        }
+        eventBus = springContext.getBean(EventBus.class);
+        sensorEngine = springContext.getBean(SensorEngine.class);
+        failurePropagator = springContext.getBean(FailurePropagator.class);
+        failureInjector = springContext.getBean(FailureInjector.class);
+        scheduler = springContext.getBean(SimulationScheduler.class);
+        systemRepository = springContext.getBean(SystemRepository.class);
+        readingRepository = springContext.getBean(ReadingRepository.class);
+        simulationRepository = springContext.getBean(SimulationRepository.class);
+        eventRepository = springContext.getBean(EventRepository.class);
+        thresholdDetector = springContext.getBean(ThresholdDetector.class);
+        zScoreDetector = springContext.getBean(ZScoreDetector.class);
+        rootCauseAnalyzer = springContext.getBean(RootCauseAnalyzer.class);
+        benchmarkService = springContext.getBean(BenchmarkService.class);
+        simulationEngine = springContext.getBean(SimulationEngine.class);
+        systemService = springContext.getBean(SystemService.class);
+        simulationService = springContext.getBean(SimulationService.class);
+        monitoringService = springContext.getBean(MonitoringService.class);
+        historyService = springContext.getBean(HistoryService.class);
+        templateService = springContext.getBean(TemplateService.class);
+        reportService = springContext.getBean(ReportService.class);
+        replayService = springContext.getBean(ReplayService.class);
 
-        // Initialize core backend components
-        eventBus = new EventBus();
-        sensorEngine = new SensorEngine(42L);
-        failurePropagator = new FailurePropagator();
-        failureInjector = new FailureInjector(eventBus, failurePropagator);
-        scheduler = new SimulationScheduler();
-
-        systemRepository = new SystemRepository(dbUrl);
-        readingRepository = new ReadingRepository(dbUrl);
-        simulationRepository = new SimulationRepository(dbUrl);
-        eventRepository = new EventRepository(dbUrl);
-
-        new EventRecorder(eventBus, eventRepository);
-
-        thresholdDetector = new ThresholdDetector();
-        zScoreDetector = new ZScoreDetector(30, 3.0);
-        rootCauseAnalyzer = new RootCauseAnalyzer();
-        benchmarkService = new BenchmarkService();
-
-        simulationEngine = new SimulationEngine(
-                eventBus, sensorEngine, failureInjector, failurePropagator, scheduler,
-                readingRepository, simulationRepository
-        );
-
-        PluginRegistry pluginRegistry = new PluginRegistry();
-        systemService = new SystemService(systemRepository, pluginRegistry);
-        simulationService = new SimulationService(simulationEngine, simulationRepository, eventRepository);
-        monitoringService = new MonitoringService(eventBus, thresholdDetector, zScoreDetector, readingRepository);
-        historyService = new HistoryService(simulationRepository, readingRepository, eventRepository);
-        templateService = new TemplateService(systemService);
-        reportService = new ReportService(historyService, readingRepository, new CriticalityAnalyzer());
-
-        // Default template
+        // Load default template from JSON
         templateService.createIndustrialManufacturingTemplate();
     }
 
@@ -160,7 +138,7 @@ public class SystemTwinApplication extends Application {
         }));
 
         // 2. System Builder Tab
-        Tab builderTab = new Tab("🏗️ System Builder");
+        Tab builderTab = new Tab("🏗 System Builder");
         builderTab.setContent(loadView("/fxml/system-builder.fxml", (BuilderController c) -> {
             this.builderController = c;
             c.initServices(systemService, templateService);
@@ -174,21 +152,34 @@ public class SystemTwinApplication extends Application {
         }));
 
         // 4. Analytics & Diagnostics Tab
-        Tab diagTab = new Tab("🔬 Root Cause & Benchmarks");
-        diagTab.setContent(createDiagnosticsTabContent());
+        Tab diagTab = new Tab("🔬 Root Cause Analysis");
+        diagTab.setContent(loadView("/fxml/analysis.fxml", (AnalysisController c) -> {
+            this.analysisController = c;
+            c.initServices(monitoringService, systemService, simulationService);
+        }));
+        diagTab.setOnSelectionChanged(e -> {
+            if (diagTab.isSelected() && analysisController != null) {
+                analysisController.handleRunRootCauseAnalysis();
+            }
+        });
 
         // 5. History & Reports Tab
         Tab histTab = new Tab("📜 History & Export");
         histTab.setContent(loadView("/fxml/history.fxml", (HistoryController c) -> {
             this.historyController = c;
-            c.initServices(historyService, reportService, systemService);
+            c.initServices(historyService, reportService, systemService, replayService);
         }));
+        histTab.setOnSelectionChanged(e -> {
+            if (histTab.isSelected() && historyController != null) {
+                historyController.refreshRuns();
+            }
+        });
 
         tabPane.getTabs().addAll(dashTab, builderTab, simTab, diagTab, histTab);
         root.setCenter(tabPane);
 
         // Scene setup
-        Scene scene = new Scene(root, 1150, 750);
+        Scene scene = new Scene(root, 1260, 800);
         try {
             scene.getStylesheets().add(getClass().getResource("/css/application.css").toExternalForm());
         } catch (Exception ex) {
@@ -196,8 +187,8 @@ public class SystemTwinApplication extends Application {
         }
 
         stage.setTitle("SystemTwin — Digital Twin Simulation & Anomaly Detection Platform");
-        stage.setMinWidth(950);
-        stage.setMinHeight(600);
+        stage.setMinWidth(1050);
+        stage.setMinHeight(650);
         stage.setScene(scene);
         stage.show();
 
@@ -232,6 +223,8 @@ public class SystemTwinApplication extends Application {
         ComboBox<String> templateCombo = new ComboBox<>();
         templateCombo.getItems().addAll("Automated Assembly Line", "Cloud Microservices", "Biosafety Laboratory");
         templateCombo.getSelectionModel().select(0);
+        templateCombo.setPrefWidth(240);
+        templateCombo.setMinWidth(220);
         templateCombo.setOnAction(e -> {
             String selected = templateCombo.getValue();
             if ("Automated Assembly Line".equals(selected)) {
@@ -243,12 +236,14 @@ public class SystemTwinApplication extends Application {
             }
             if (builderController != null) builderController.refreshView();
             if (simulationController != null) simulationController.refreshComponents();
+            if (monitoringService != null) monitoringService.clear();
         });
 
         // Quick simulation action buttons
         Button quickStartBtn = new Button("▶ Quick Start");
         quickStartBtn.getStyleClass().add("btn-primary");
         quickStartBtn.setOnAction(e -> {
+            if (monitoringService != null) monitoringService.clear();
             SystemModel sys = systemService.getActiveSystem();
             if (sys != null) {
                 simulationService.start(sys, "Live-Run-" + System.currentTimeMillis() % 1000, 42L);
@@ -257,7 +252,12 @@ public class SystemTwinApplication extends Application {
 
         Button quickStopBtn = new Button("⏹ Stop");
         quickStopBtn.getStyleClass().add("btn-danger");
-        quickStopBtn.setOnAction(e -> simulationService.stop());
+        quickStopBtn.setOnAction(e -> {
+            simulationService.stop();
+            if (historyController != null) {
+                historyController.refreshRuns();
+            }
+        });
 
         header.getChildren().addAll(titleBox, spacer, tplLabel, templateCombo, quickStartBtn, quickStopBtn);
         return header;
@@ -365,6 +365,9 @@ public class SystemTwinApplication extends Application {
         }
         if (simulationService != null) {
             simulationService.stop();
+        }
+        if (springContext != null) {
+            springContext.close();
         }
     }
 

@@ -122,7 +122,7 @@ public class SimulationController {
         String compId = componentFaultCombo.getValue();
         if (compId != null) {
             simulationService.injectDegradation(compId);
-            eventLogData.add(0, "⚠️ Degradation applied to " + compId);
+            eventLogData.add(0, "⚠ Degradation applied to " + compId);
         }
     }
 
