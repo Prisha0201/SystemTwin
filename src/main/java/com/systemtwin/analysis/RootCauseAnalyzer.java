@@ -8,6 +8,10 @@ import java.util.*;
 /**
  * Correlates multi-component anomaly bursts with topological dependency graph structure
  * to pinpoint the most probable primary root-cause component.
+ *
+ * Score(c) = 0.65 * Coverage(c) + 0.35 * RootPosition(c)
+ *   Coverage(c)     = share of anomalous components that are c itself or downstream of c
+ *   RootPosition(c) = 1 if c raised the earliest anomaly OR no anomalous component sits upstream of c
  */
 public class RootCauseAnalyzer {
 
@@ -57,13 +61,14 @@ public class RootCauseAnalyzer {
             compAnomalies.computeIfAbsent(a.getComponentId(), k -> new ArrayList<>()).add(a);
         }
 
-        // Find candidate with earliest anomaly
+        // Candidate that raised the earliest anomaly
         String earliestComp = sorted.get(0).getComponentId();
 
-        // Check topological graph reachability:
-        // A component that can reach all other affected components downstream has highest probability
         String bestCandidate = earliestComp;
-        double highestScore = 0.0;
+        double highestScore = -1.0;
+        int bestCovered = 0;
+        boolean bestIsEarliest = false;
+        boolean bestIsSource = false;
         List<String> bestChain = new ArrayList<>();
 
         for (String candidate : compAnomalies.keySet()) {
@@ -77,32 +82,65 @@ public class RootCauseAnalyzer {
 
             double coverage = (double) covered / compAnomalies.size();
             boolean isEarliest = candidate.equals(earliestComp);
-            double score = (coverage * 0.65) + (isEarliest ? 0.35 : 0.0);
+            boolean isSource = !hasAnomalousUpstream(candidate, compAnomalies.keySet(), graph);
+            double score = (coverage * 0.65) + ((isEarliest || isSource) ? 0.35 : 0.0);
 
             if (score > highestScore) {
                 highestScore = score;
                 bestCandidate = candidate;
+                bestCovered = covered;
+                bestIsEarliest = isEarliest;
+                bestIsSource = isSource;
                 bestChain.clear();
                 bestChain.add(candidate);
                 for (String d : downstream) {
-                    if (compAnomalies.containsKey(d) && !bestChain.contains(d)) {
+                    if (!bestChain.contains(d)) {
                         bestChain.add(d);
                     }
                 }
             }
         }
 
+        double confidence = Math.min(1.0, Math.max(0.0, highestScore));
+
+        String chainStr = bestChain.size() > 1 ? String.join(" ➔ ", bestChain) : bestCandidate + " (Terminal Node)";
+
+        String reason;
+        if (bestIsSource && bestIsEarliest) {
+            reason = "no anomalous component sits upstream of it and it raised the earliest anomaly";
+        } else if (bestIsSource) {
+            reason = "no anomalous component sits upstream of it, so nothing else can explain its fault";
+        } else if (bestIsEarliest) {
+            reason = "it raised the earliest anomaly";
+        } else {
+            reason = "it explains the largest share of the observed anomalies";
+        }
+
         String explanation = String.format(
-                "Component '%s' identified as root cause: initiated earliest telemetry variance and is upstream to %d affected dependent nodes.",
-                bestCandidate, Math.max(0, bestChain.size() - 1)
+                "Component '%s' identified as primary root cause (confidence %.0f%%) because %s. "
+                        + "It accounts for %d of %d anomalous component(s) and cascades downstream across %d dependent node(s):\nPathway: %s",
+                bestCandidate, confidence * 100.0, reason,
+                bestCovered, compAnomalies.size(), Math.max(0, bestChain.size() - 1), chainStr
         );
 
         return Optional.of(new RootCauseDiagnosis(
                 bestCandidate,
-                Math.min(1.0, highestScore),
+                confidence,
                 bestChain,
                 explanation,
                 anomalies.size()
         ));
+    }
+
+    /**
+     * True when at least one other anomalous component is a (transitive) prerequisite of the candidate.
+     */
+    private boolean hasAnomalousUpstream(String candidate, Set<String> anomalous, DependencyGraph graph) {
+        for (String upstream : graph.getUpstreamDependencies(candidate)) {
+            if (!upstream.equals(candidate) && anomalous.contains(upstream)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

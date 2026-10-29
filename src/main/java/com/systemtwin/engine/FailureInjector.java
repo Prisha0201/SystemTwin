@@ -39,11 +39,26 @@ public class FailureInjector {
 
         log.info("Injecting failure into component {} (cascade={})", componentId, cascade);
 
-        List<FailurePropagator.CascadeStep> steps = failurePropagator.propagateFailure(
-                system.getDependencyGraph(),
-                componentId,
-                false // allows progressive degradation
-        );
+        List<FailurePropagator.CascadeStep> steps;
+        if (cascade) {
+            steps = failurePropagator.propagateFailure(
+                    system.getDependencyGraph(),
+                    componentId,
+                    false // allows progressive degradation
+            );
+        } else {
+            comp.setState(ComponentState.FAILED);
+            comp.setCpuUtilizationPercent(0.0);
+            steps = List.of(new FailurePropagator.CascadeStep(
+                    0,
+                    componentId,
+                    comp.getName(),
+                    ComponentState.HEALTHY,
+                    ComponentState.FAILED,
+                    "INJECTED_FAULT",
+                    "Direct isolated fault injection (cascading disabled)"
+            ));
+        }
 
         if (eventBus != null) {
             eventBus.publish(new SimulationEvent(

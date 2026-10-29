@@ -20,8 +20,6 @@ public class ZScoreDetector implements AnomalyDetector {
     private static class RollingWindow {
         private final int capacity;
         private final Deque<Double> values = new ArrayDeque<>();
-        private double sum = 0.0;
-        private double sumSquares = 0.0;
 
         public RollingWindow(int capacity) {
             this.capacity = capacity;
@@ -29,29 +27,48 @@ public class ZScoreDetector implements AnomalyDetector {
 
         public synchronized void add(double value) {
             if (values.size() >= capacity) {
-                double removed = values.removeFirst();
-                sum -= removed;
-                sumSquares -= (removed * removed);
+                values.removeFirst();
             }
             values.addLast(value);
-            sum += value;
-            sumSquares += (value * value);
         }
 
         public synchronized int size() {
             return values.size();
         }
 
+        /**
+         * Calculates sample mean using Welford's recurrence algorithm.
+         */
         public synchronized double getMean() {
-            return values.isEmpty() ? 0.0 : sum / values.size();
+            if (values.isEmpty()) return 0.0;
+            double mean = 0.0;
+            int count = 0;
+            for (double x : values) {
+                count++;
+                mean += (x - mean) / count;
+            }
+            return mean;
         }
 
+        /**
+         * Calculates sample standard deviation using Welford's algorithm (M2 / (n - 1)).
+         * Guaranteed numerical stability against catastrophic cancellation.
+         */
         public synchronized double getStandardDeviation() {
             int n = values.size();
             if (n < 2) return 0.0;
-            double mean = sum / n;
-            double variance = Math.max(0.0, (sumSquares / n) - (mean * mean));
-            return Math.sqrt(variance);
+            double mean = 0.0;
+            double m2 = 0.0;
+            int count = 0;
+            for (double x : values) {
+                count++;
+                double delta = x - mean;
+                mean += delta / count;
+                double delta2 = x - mean;
+                m2 += delta * delta2;
+            }
+            double sampleVariance = m2 / (n - 1);
+            return Math.sqrt(Math.max(0.0, sampleVariance));
         }
     }
 

@@ -55,14 +55,15 @@ $$\text{isSPOF}(v) \iff B(v) \ge \max\left(2, \; \lceil 0.35 \cdot |V| \rceil\ri
 
 ## 4. Rolling Statistical Z-Score Anomaly Detection
 
-### Formulation
-For each sensor metric stream $X = \{x_1, x_2, \dots, x_N\}$, a sliding window of capacity $W = 30$ observations is maintained.
+### Formulation (Welford's Algorithm)
+For each sensor metric stream $X = \{x_1, x_2, \dots, x_N\}$, a sliding window of capacity $W = 30$ observations is maintained. To avoid catastrophic floating-point cancellation, sample mean and sample variance are calculated via **Welford's algorithm (1962)**:
 
-Rolling sample mean $\mu$:
-$$\mu = \frac{1}{W} \sum_{i=1}^W x_i$$
+$$\mu_k = \mu_{k-1} + \frac{x_k - \mu_{k-1}}{k}$$
 
-Rolling sample variance $\sigma^2$ and standard deviation $\sigma$:
-$$\sigma^2 = \frac{1}{W} \sum_{i=1}^W x_i^2 - \mu^2, \quad \sigma = \sqrt{\max(0, \sigma^2)}$$
+$$M_{2,k} = M_{2,k-1} + (x_k - \mu_{k-1})(x_k - \mu_k)$$
+
+Sample variance $s^2$ and sample standard deviation $\sigma$:
+$$s^2 = \frac{M_{2,n}}{n - 1}, \quad \sigma = \sqrt{\max(0, s^2)}$$
 
 The standard score $Z_t$ for a new reading $x_t$ is:
 $$Z_t = \frac{|x_t - \mu|}{\sigma}$$
@@ -83,4 +84,5 @@ When multiple components generate anomaly alerts within time interval $\Delta T$
    $$\text{Coverage}(c) = \frac{|\{ a \in \mathcal{A} \mid a = c \lor a \in \text{Reachable}_{\text{downstream}}(c) \}|}{|\mathcal{A}|}$$
 3. The candidate score is maximized:
    $$\text{Score}(c) = 0.65 \cdot \text{Coverage}(c) + 0.35 \cdot \mathbf{1}_{\{c = c_{\text{earliest}}\}}$$
+3b. A candidate also earns the 0.35 root-position bonus when **no other anomalous component sits upstream of it** (a topological source), not only when it raised the earliest anomaly. This avoids penalising a correct culprit whose readings happen to be processed later within the same simulation tick.
 4. The candidate with $\max \text{Score}(c)$ is declared the primary root cause with propagation chain reconstructed from BFS traversal.

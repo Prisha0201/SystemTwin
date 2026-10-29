@@ -156,37 +156,53 @@ public class FailurePropagator {
                 "Component restored and operational"
         ));
 
-        // Check if direct dependents can recover (only if all their upstream dependencies are healthy)
-        Set<String> dependents = graph.getDirectDependents(recoveredComponentId);
+        // Multi-hop transitive recovery via BFS
+        Queue<String> queue = new ArrayDeque<>();
+        queue.add(recoveredComponentId);
+        Set<String> visited = new HashSet<>();
+        visited.add(recoveredComponentId);
         int step = 1;
-        for (String depId : dependents) {
-            ComponentModel dep = nodes.get(depId);
-            if (dep == null || dep.getState() == ComponentState.HEALTHY) continue;
 
-            Set<String> upstream = graph.getDirectDependencies(depId);
-            boolean allHealthy = true;
-            for (String upId : upstream) {
-                ComponentModel up = nodes.get(upId);
-                if (up != null && !up.isOperational()) {
-                    allHealthy = false;
-                    break;
+        while (!queue.isEmpty()) {
+            int levelSize = queue.size();
+            for (int i = 0; i < levelSize; i++) {
+                String parentId = queue.poll();
+                Set<String> dependents = graph.getDirectDependents(parentId);
+
+                for (String depId : dependents) {
+                    if (visited.contains(depId)) continue;
+                    ComponentModel dep = nodes.get(depId);
+                    if (dep == null || dep.getState() == ComponentState.HEALTHY) continue;
+
+                    Set<String> upstream = graph.getDirectDependencies(depId);
+                    boolean allHealthy = true;
+                    for (String upId : upstream) {
+                        ComponentModel up = nodes.get(upId);
+                        if (up != null && !up.isOperational()) {
+                            allHealthy = false;
+                            break;
+                        }
+                    }
+
+                    if (allHealthy) {
+                        ComponentState depPrev = dep.getState();
+                        dep.setState(ComponentState.HEALTHY);
+                        dep.setCpuUtilizationPercent(18.0);
+                        steps.add(new CascadeStep(
+                                step,
+                                depId,
+                                dep.getName(),
+                                depPrev,
+                                ComponentState.HEALTHY,
+                                parentId,
+                                "All upstream dependencies restored; recovered to HEALTHY"
+                        ));
+                        visited.add(depId);
+                        queue.add(depId);
+                    }
                 }
             }
-
-            if (allHealthy) {
-                ComponentState depPrev = dep.getState();
-                dep.setState(ComponentState.HEALTHY);
-                dep.setCpuUtilizationPercent(18.0);
-                steps.add(new CascadeStep(
-                        step++,
-                        depId,
-                        dep.getName(),
-                        depPrev,
-                        ComponentState.HEALTHY,
-                        recoveredComponentId,
-                        "All upstream dependencies restored"
-                ));
-            }
+            step++;
         }
         return steps;
     }

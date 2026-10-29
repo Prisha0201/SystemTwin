@@ -47,6 +47,23 @@ public class SimulationEngine {
         this.scheduler = scheduler != null ? scheduler : new SimulationScheduler();
         this.readingRepository = readingRepository;
         this.simulationRepository = simulationRepository;
+
+        if (this.eventBus != null) {
+            this.eventBus.subscribe(AnomalyEvent.class, this::onAnomaly);
+        }
+    }
+
+    private void onAnomaly(AnomalyEvent anomaly) {
+        if (currentRun != null && anomaly != null) {
+            currentRun.incrementAnomalies();
+            if (simulationRepository != null) {
+                try {
+                    simulationRepository.updateRun(currentRun);
+                } catch (Exception ex) {
+                    log.warn("Failed updating simulation run anomaly count: {}", ex.getMessage());
+                }
+            }
+        }
     }
 
     public synchronized SimulationRun startSimulation(SystemModel system, String name, long randomSeed) {
@@ -55,6 +72,11 @@ public class SimulationEngine {
         }
 
         this.currentSystem = system;
+        if (system != null) {
+            for (ComponentModel c : system.getComponents().values()) {
+                c.setState(ComponentState.HEALTHY);
+            }
+        }
         this.sensorEngine.setSeed(randomSeed);
         this.currentRun = new SimulationRun(UUID.randomUUID().toString(), system != null ? system.getId() : "default", name, randomSeed);
         this.currentRun.setStatus("RUNNING");
@@ -189,18 +211,21 @@ public class SimulationEngine {
     }
 
     public List<FailurePropagator.CascadeStep> injectFailure(String componentId, boolean cascade) {
-        if (currentSystem == null || currentRun == null) return List.of();
-        return failureInjector.injectFailure(currentSystem, componentId, currentRun.getId(), cascade);
+        if (currentSystem == null) return List.of();
+        String runId = currentRun != null ? currentRun.getId() : "manual-inject";
+        return failureInjector.injectFailure(currentSystem, componentId, runId, cascade);
     }
 
     public void injectDegradation(String componentId) {
-        if (currentSystem == null || currentRun == null) return;
-        failureInjector.injectDegradation(currentSystem, componentId, currentRun.getId());
+        if (currentSystem == null) return;
+        String runId = currentRun != null ? currentRun.getId() : "manual-inject";
+        failureInjector.injectDegradation(currentSystem, componentId, runId);
     }
 
     public List<FailurePropagator.CascadeStep> recoverComponent(String componentId) {
-        if (currentSystem == null || currentRun == null) return List.of();
-        return failureInjector.recoverComponent(currentSystem, componentId, currentRun.getId());
+        if (currentSystem == null) return List.of();
+        String runId = currentRun != null ? currentRun.getId() : "manual-recover";
+        return failureInjector.recoverComponent(currentSystem, componentId, runId);
     }
 
     public SystemModel getCurrentSystem() {
