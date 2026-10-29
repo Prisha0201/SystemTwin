@@ -37,11 +37,20 @@
       "sensors": [
         { "id": "s-conv-speed", "metricName": "SPEED", "unit": "m/s", "minNormal": 1.0, "maxNormal": 2.5 }
       ]
+    },
+    {
+      "id": "vision-qc",
+      "name": "Optical QC Scanner",
+      "type": "INSPECTION",
+      "sensors": [
+        { "id": "s-qc-defect", "metricName": "ACCURACY", "unit": "%", "minNormal": 98.0, "maxNormal": 100.0 }
+      ]
     }
   ],
   "dependencies": [
     { "source": "robot-arm", "target": "pump-01" },
     { "source": "robot-arm", "target": "plc-main" },
-    { "source": "conveyor-01", "target": "plc-main" }
+    { "source": "conveyor-01", "target": "plc-main" },
+    { "source": "vision-qc", "target": "conveyor-01" }
   ]
 }

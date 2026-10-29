@@ -4,8 +4,14 @@ import com.systemtwin.model.ComponentModel;
 import com.systemtwin.model.Sensor;
 import com.systemtwin.model.SystemModel;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Provides industrial, laboratory, and cloud data center digital twin templates.
+ * Loads topology definitions directly from example JSON files when available.
  */
 public class TemplateService {
 
@@ -15,7 +21,89 @@ public class TemplateService {
         this.systemService = systemService;
     }
 
+    public SystemModel loadFromJsonFile(String relativePath) {
+        try {
+            File f = new File(relativePath);
+            if (!f.exists()) return null;
+            String json = Files.readString(f.toPath());
+            return parseSystemJson(json);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private static String extractField(String text, String field) {
+        Matcher m = Pattern.compile("\"" + Pattern.quote(field) + "\"\\s*:\\s*\"([^\"]+)\"").matcher(text);
+        return m.find() ? m.group(1) : null;
+    }
+
+    private static String extractFirstString(String text) {
+        Matcher m = Pattern.compile("\"([^\"]+)\"").matcher(text);
+        return m.find() ? m.group(1) : null;
+    }
+
+    private static double extractDouble(String text, String field, double defVal) {
+        Matcher m = Pattern.compile("\"" + Pattern.quote(field) + "\"\\s*:\\s*([0-9.]+)").matcher(text);
+        return m.find() ? Double.parseDouble(m.group(1)) : defVal;
+    }
+
+    public static SystemModel parseSystemJson(String json) {
+        String sysId = extractField(json, "systemId");
+        String name = extractField(json, "name");
+        String desc = extractField(json, "description");
+        SystemModel sys = new SystemModel(sysId != null ? sysId : "sys-" + System.currentTimeMillis(),
+                name != null ? name : "Loaded System", desc != null ? desc : "");
+
+        int compIdx = json.indexOf("\"components\":");
+        int depIdx = json.indexOf("\"dependencies\":");
+        if (compIdx != -1) {
+            String compPart = depIdx != -1 ? json.substring(compIdx, depIdx) : json.substring(compIdx);
+            Pattern compPattern = Pattern.compile(
+                    "\\{\\s*\"id\":\\s*\"([^\"]+)\"\\s*,\\s*\"name\":\\s*\"([^\"]+)\"\\s*,\\s*\"type\":\\s*\"([^\"]+)\"\\s*,\\s*\"sensors\":\\s*\\[(.*?)\\]",
+                    Pattern.DOTALL
+            );
+            Matcher compMatcher = compPattern.matcher(compPart);
+            while (compMatcher.find()) {
+                String id = compMatcher.group(1);
+                String cName = compMatcher.group(2);
+                String type = compMatcher.group(3);
+                String sensorsPart = compMatcher.group(4);
+
+                ComponentModel comp = new ComponentModel(id, cName, type);
+
+                Pattern sensorPattern = Pattern.compile(
+                        "\\{\\s*\"id\":\\s*\"([^\"]+)\"\\s*,\\s*\"metricName\":\\s*\"([^\"]+)\"\\s*,\\s*\"unit\":\\s*\"([^\"]+)\"\\s*,\\s*\"minNormal\":\\s*([0-9.]+)\\s*,\\s*\"maxNormal\":\\s*([0-9.]+)\\s*\\}"
+                );
+                Matcher sMatcher = sensorPattern.matcher(sensorsPart);
+                while (sMatcher.find()) {
+                    String sId = sMatcher.group(1);
+                    String metric = sMatcher.group(2);
+                    String unit = sMatcher.group(3);
+                    double minN = Double.parseDouble(sMatcher.group(4));
+                    double maxN = Double.parseDouble(sMatcher.group(5));
+                    comp.addSensor(new Sensor(sId, id, metric, unit, minN, maxN));
+                }
+                sys.addComponent(comp);
+            }
+        }
+
+        if (depIdx != -1) {
+            String depPart = json.substring(depIdx);
+            Matcher m = Pattern.compile("\\{\\s*\"source\":\\s*\"([^\"]+)\"\\s*,\\s*\"target\":\\s*\"([^\"]+)\"\\s*\\}").matcher(depPart);
+            while (m.find()) {
+                sys.addDependency(m.group(1), m.group(2));
+            }
+        }
+        return sys;
+    }
+
     public SystemModel createIndustrialManufacturingTemplate() {
+        SystemModel loaded = loadFromJsonFile("examples/industrial-system/system.json");
+        if (loaded != null) {
+            if (systemService != null) systemService.setActiveSystem(loaded);
+            return loaded;
+        }
+
         SystemModel sys = new SystemModel(
                 "sys-industrial",
                 "Automated Assembly Line",
@@ -61,6 +149,12 @@ public class TemplateService {
     }
 
     public SystemModel createDataCenterTemplate() {
+        SystemModel loaded = loadFromJsonFile("examples/data-center/system.json");
+        if (loaded != null) {
+            if (systemService != null) systemService.setActiveSystem(loaded);
+            return loaded;
+        }
+
         SystemModel sys = new SystemModel(
                 "sys-datacenter",
                 "Cloud Microservices Cluster",
@@ -109,6 +203,12 @@ public class TemplateService {
     }
 
     public SystemModel createLaboratorySystemTemplate() {
+        SystemModel loaded = loadFromJsonFile("examples/laboratory-system/system.json");
+        if (loaded != null) {
+            if (systemService != null) systemService.setActiveSystem(loaded);
+            return loaded;
+        }
+
         SystemModel sys = new SystemModel(
                 "sys-laboratory",
                 "Automated Biosafety Laboratory",

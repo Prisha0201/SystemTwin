@@ -9,14 +9,27 @@ CREATE TABLE IF NOT EXISTS systems (
 );
 
 CREATE TABLE IF NOT EXISTS components (
-    id VARCHAR(64) PRIMARY KEY,
+    id VARCHAR(64) NOT NULL,
     system_id VARCHAR(64) NOT NULL,
     name VARCHAR(128) NOT NULL,
     type VARCHAR(64) NOT NULL,
     state VARCHAR(32) NOT NULL DEFAULT 'HEALTHY',
     cpu_utilization REAL DEFAULT 0.0,
     metadata TEXT,
+    PRIMARY KEY (system_id, id),
     FOREIGN KEY (system_id) REFERENCES systems(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS sensors (
+    id VARCHAR(64) NOT NULL,
+    component_id VARCHAR(64) NOT NULL,
+    system_id VARCHAR(64) NOT NULL,
+    metric_name VARCHAR(64) NOT NULL,
+    unit VARCHAR(32),
+    min_normal REAL,
+    max_normal REAL,
+    PRIMARY KEY (system_id, component_id, id),
+    FOREIGN KEY (system_id, component_id) REFERENCES components(system_id, id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS dependencies (
@@ -25,8 +38,8 @@ CREATE TABLE IF NOT EXISTS dependencies (
     system_id VARCHAR(64) NOT NULL,
     weight REAL DEFAULT 1.0,
     PRIMARY KEY (source_id, target_id, system_id),
-    FOREIGN KEY (source_id) REFERENCES components(id) ON DELETE CASCADE,
-    FOREIGN KEY (target_id) REFERENCES components(id) ON DELETE CASCADE
+    FOREIGN KEY (system_id, source_id) REFERENCES components(system_id, id) ON DELETE CASCADE,
+    FOREIGN KEY (system_id, target_id) REFERENCES components(system_id, id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS simulation_runs (

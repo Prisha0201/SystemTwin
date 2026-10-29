@@ -5,6 +5,8 @@ import com.systemtwin.analysis.ZScoreDetector;
 import com.systemtwin.events.EventBus;
 import com.systemtwin.model.AnomalyEvent;
 import com.systemtwin.model.SensorReading;
+import com.systemtwin.model.SimulationEvent;
+import com.systemtwin.repository.EventRepository;
 import com.systemtwin.repository.ReadingRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,18 +32,36 @@ public class MonitoringService {
     private final List<SensorReading> liveReadingBuffer = new CopyOnWriteArrayList<>();
     private static final int MAX_BUFFER_SIZE = 1000;
 
+    private final EventRepository eventRepository;
+
     public MonitoringService(
             EventBus eventBus,
             ThresholdDetector thresholdDetector,
             ZScoreDetector zScoreDetector,
             ReadingRepository readingRepository) {
+        this(eventBus, thresholdDetector, zScoreDetector, readingRepository, null);
+    }
+
+    public MonitoringService(
+            EventBus eventBus,
+            ThresholdDetector thresholdDetector,
+            ZScoreDetector zScoreDetector,
+            ReadingRepository readingRepository,
+            EventRepository eventRepository) {
         this.eventBus = eventBus;
         this.thresholdDetector = thresholdDetector != null ? thresholdDetector : new ThresholdDetector();
         this.zScoreDetector = zScoreDetector != null ? zScoreDetector : new ZScoreDetector(30, 3.0);
         this.readingRepository = readingRepository;
+        this.eventRepository = eventRepository;
 
         if (eventBus != null) {
             eventBus.subscribe(SensorReading.class, this::processReading);
+            // A new run must not inherit anomalies (or detector history) from a previous run or template
+            eventBus.subscribe(SimulationEvent.class, event -> {
+                if (event != null && "SIMULATION_STARTED".equals(event.getEventType())) {
+                    clear();
+                }
+            });
         }
     }
 
@@ -66,6 +86,14 @@ public class MonitoringService {
         activeAnomalies.add(anomaly);
         while (activeAnomalies.size() > 500) {
             activeAnomalies.poll();
+        }
+
+        if (eventRepository != null) {
+            try {
+                eventRepository.saveAnomalyEvent(anomaly);
+            } catch (Exception ex) {
+                log.warn("Failed persisting anomaly event {}: {}", anomaly.getId(), ex.getMessage());
+            }
         }
 
         if (eventBus != null) {

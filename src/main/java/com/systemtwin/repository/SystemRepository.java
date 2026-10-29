@@ -2,6 +2,7 @@ package com.systemtwin.repository;
 
 import com.systemtwin.model.ComponentModel;
 import com.systemtwin.model.ComponentState;
+import com.systemtwin.model.Sensor;
 import com.systemtwin.model.SystemModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +63,26 @@ public class SystemRepository {
             ps.setString(7, comp.getMetadata().toString());
             ps.executeUpdate();
         }
+
+        for (Sensor sensor : comp.getSensors()) {
+            saveSensor(systemId, comp.getId(), sensor);
+        }
+    }
+
+    public void saveSensor(String systemId, String componentId, Sensor sensor) throws SQLException {
+        if (sensor == null) return;
+        String sql = "INSERT OR REPLACE INTO sensors (id, component_id, system_id, metric_name, unit, min_normal, max_normal) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, sensor.getId());
+            ps.setString(2, componentId);
+            ps.setString(3, systemId);
+            ps.setString(4, sensor.getMetricName());
+            ps.setString(5, sensor.getUnit());
+            ps.setDouble(6, sensor.getMinNormal());
+            ps.setDouble(7, sensor.getMaxNormal());
+            ps.executeUpdate();
+        }
     }
 
     public void saveDependency(String systemId, String sourceId, String targetId) throws SQLException {
@@ -94,6 +115,28 @@ public class SystemRepository {
                             comp.setState(ComponentState.valueOf(compRs.getString("state")));
                             comp.setCpuUtilizationPercent(compRs.getDouble("cpu_utilization"));
                             system.addComponent(comp);
+                        }
+                    }
+                }
+
+                // Load sensors
+                String sensorSql = "SELECT id, component_id, metric_name, unit, min_normal, max_normal FROM sensors WHERE system_id = ?";
+                try (PreparedStatement sPs = conn.prepareStatement(sensorSql)) {
+                    sPs.setString(1, id);
+                    try (ResultSet sRs = sPs.executeQuery()) {
+                        while (sRs.next()) {
+                            String compId = sRs.getString("component_id");
+                            ComponentModel comp = system.getComponent(compId);
+                            if (comp != null) {
+                                comp.addSensor(new com.systemtwin.model.Sensor(
+                                        sRs.getString("id"),
+                                        compId,
+                                        sRs.getString("metric_name"),
+                                        sRs.getString("unit"),
+                                        sRs.getDouble("min_normal"),
+                                        sRs.getDouble("max_normal")
+                                ));
+                            }
                         }
                     }
                 }

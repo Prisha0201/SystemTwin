@@ -1,7 +1,9 @@
 package com.systemtwin.config;
 
+import com.systemtwin.analysis.RootCauseAnalyzer;
 import com.systemtwin.analysis.ThresholdDetector;
 import com.systemtwin.analysis.ZScoreDetector;
+import com.systemtwin.benchmark.BenchmarkService;
 import com.systemtwin.engine.FailureInjector;
 import com.systemtwin.engine.SensorEngine;
 import com.systemtwin.engine.SimulationEngine;
@@ -187,8 +189,19 @@ public class SpringConfig {
             EventBus eventBus,
             ThresholdDetector thresholdDetector,
             ZScoreDetector zScoreDetector,
-            ReadingRepository readingRepository) {
-        return new MonitoringService(eventBus, thresholdDetector, zScoreDetector, readingRepository);
+            ReadingRepository readingRepository,
+            EventRepository eventRepository) {
+        return new MonitoringService(eventBus, thresholdDetector, zScoreDetector, readingRepository, eventRepository);
+    }
+
+    @Bean
+    public RootCauseAnalyzer rootCauseAnalyzer() {
+        return new RootCauseAnalyzer();
+    }
+
+    @Bean
+    public BenchmarkService benchmarkService() {
+        return new BenchmarkService();
     }
 
     @Bean

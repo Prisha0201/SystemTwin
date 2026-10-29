@@ -8,8 +8,20 @@
       "name": "HEPA Cleanroom HVAC",
       "type": "HVAC",
       "sensors": [
-        { "id": "s-hvac-flow", "metricName": "AIR_FLOW", "unit": "CFM", "minNormal": 800.0, "maxNormal": 1500.0 },
-        { "id": "s-hvac-press", "metricName": "PRESSURE_DELTA", "unit": "Pa", "minNormal": 25.0, "maxNormal": 50.0 }
+        {
+          "id": "s-hvac-flow",
+          "metricName": "AIR_FLOW",
+          "unit": "CFM",
+          "minNormal": 800.0,
+          "maxNormal": 1500.0
+        },
+        {
+          "id": "s-hvac-press",
+          "metricName": "PRESSURE_DELTA",
+          "unit": "Pa",
+          "minNormal": 25.0,
+          "maxNormal": 50.0
+        }
       ]
     },
     {
@@ -17,8 +29,20 @@
       "name": "Cell Culture Incubator",
       "type": "INCUBATOR",
       "sensors": [
-        { "id": "s-inc-temp", "metricName": "TEMPERATURE", "unit": "°C", "minNormal": 36.8, "maxNormal": 37.2 },
-        { "id": "s-inc-co2", "metricName": "CO2_LEVEL", "unit": "%", "minNormal": 4.9, "maxNormal": 5.1 }
+        {
+          "id": "s-inc-temp",
+          "metricName": "TEMPERATURE",
+          "unit": "°C",
+          "minNormal": 36.8,
+          "maxNormal": 37.2
+        },
+        {
+          "id": "s-inc-co2",
+          "metricName": "CO2_LEVEL",
+          "unit": "%",
+          "minNormal": 4.9,
+          "maxNormal": 5.1
+        }
       ]
     },
     {
@@ -26,12 +50,27 @@
       "name": "High-Speed Centrifuge",
       "type": "CENTRIFUGE",
       "sensors": [
-        { "id": "s-cent-rpm", "metricName": "RPM", "unit": "rpm", "minNormal": 5000.0, "maxNormal": 15000.0 },
-        { "id": "s-cent-vib", "metricName": "VIBRATION", "unit": "mm/s", "minNormal": 0.2, "maxNormal": 2.0 }
+        {
+          "id": "s-cent-rpm",
+          "metricName": "RPM",
+          "unit": "rpm",
+          "minNormal": 5000.0,
+          "maxNormal": 15000.0
+        },
+        {
+          "id": "s-cent-vib",
+          "metricName": "VIBRATION",
+          "unit": "mm/s",
+          "minNormal": 0.2,
+          "maxNormal": 2.0
+        }
       ]
     }
   ],
   "dependencies": [
-    { "source": "incubator-01", "target": "hvac-main" }
+    {
+      "source": "incubator-01",
+      "target": "hvac-main"
+    }
   ]
 }

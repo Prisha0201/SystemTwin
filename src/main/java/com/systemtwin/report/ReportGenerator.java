@@ -59,7 +59,7 @@ public class ReportGenerator {
             for (CriticalityAnalyzer.CriticalityReport cr : criticalityReports) {
                 sb.append(String.format("| **%s** | %.1f | %d | %d | %s | %s |\n",
                         cr.getComponentName(), cr.getCriticalityScore(), cr.getBlastRadius(),
-                        cr.getUpstreamDependencies(), cr.isSinglePointOfFailure() ? "⚠️ **YES**" : "No", cr.getAssessment()));
+                        cr.getUpstreamDependencies(), cr.isSinglePointOfFailure() ? "⚠ **YES**" : "No", cr.getAssessment()));
             }
             sb.append("\n");
         }
