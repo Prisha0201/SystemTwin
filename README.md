@@ -4,7 +4,7 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.21-blue.svg)](https://kotlinlang.org/)
 [![JavaFX](https://img.shields.io/badge/JavaFX-21-green.svg)](https://openjfx.io/)
 [![SQLite](https://img.shields.io/badge/SQLite-JDBC-lightgrey.svg)](https://github.com/xerial/sqlite-jdbc)
-[![Tests](https://img.shields.io/badge/Tests-27%20Passed-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-28%20Passed-brightgreen.svg)]()
 
 **SystemTwin** is a native Java desktop digital twin simulation and monitoring platform. It combines graph-based topological dependency modeling, real-time stochastic telemetry generation, cascading fault propagation, statistical anomaly detection (rolling 3σ Z-score and dual thresholds), topological root-cause analysis, and embedded SQLite time-series persistence.
 
